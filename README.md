@@ -5,6 +5,9 @@
 
 The ApplicationInsights StatsD backend enables easy pre-aggregation of lightweight [StatsD](https://github.com/etsy/statsd) metrics that can be then forwarded to Application Insights.
 
+## Status
+This SDK is NOT maintained or supported by Microsoft even though we've contributed to it in the past. Note that Azure Monitor only provides support when using the [supported SDKs](https://docs.microsoft.com/en-us/azure/azure-monitor/app/platforms#unsupported-community-sdks). We’re constantly assessing opportunities to expand our support for other languages, so follow our [GitHub Announcements](https://github.com/microsoft/ApplicationInsights-Announcements/issues) page to receive the latest SDK news.
+
 ## Installation and Configuration
 
 You can add the appinsights backend into your existing StatsD project or into a new clone of the official StatsD repo.
