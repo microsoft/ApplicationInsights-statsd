@@ -1,4 +1,4 @@
-# Application Insights StatsD backend
+# [UNSUPPORTED] Application Insights StatsD backend
 
 [![NPM version](https://badge.fury.io/js/appinsights-statsd.svg)](http://badge.fury.io/js/appinsights-statsd)
 [![Build Status](https://travis-ci.org/Microsoft/ApplicationInsights-statsd.svg?branch=master)](https://travis-ci.org/Microsoft/ApplicationInsights-statsd)
