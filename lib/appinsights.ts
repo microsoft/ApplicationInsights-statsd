@@ -1,162 +1,132 @@
-/**
- * Application Insights StatsD backend
- */
-
+"use strict";
 console.log("[aibackend] Starting...");
-
-import events = require("events");
-import util = require("util");
-
-import ai = require("applicationinsights");
-
-class AppInsightsBackend {
-    protected prefix: string;
-    protected roleName: string;
-    protected roleInstance: string;
-    protected instrumentationKey: string;
-    protected trackStatsDMetrics: boolean = false;
-    
-    protected appInsights: ApplicationInsights;
-    protected get aiClient(): Client {
-        return this.appInsights.client;
+var util = require("util");
+var ai = require("applicationinsights");
+var AppInsightsBackend = (function () {
+    function AppInsightsBackend(config) {
+        this.trackStatsDMetrics = false;
+        this.roleName = config.aiRoleName;
+        this.roleInstance = config.aiRoleInstance;
+        this.instrumentationKey = config.aiInstrumentationKey;
+        if (!!config.aiPrefix) {
+            this.prefix = config.aiPrefix + ".";
+        }
+        if (!!config.aiTrackStatsDMetrics) {
+            this.trackStatsDMetrics = config.aiTrackStatsDMetrics;
+        }
     }
-    
-    public static init = function(startupTime: number, config: any, events: events.EventEmitter) {
-        const instance = new AppInsightsBackend(config);
-        instance.init(events);
-        return true;
-    };
-    
-    public constructor(config: any) {
-       this.roleName = config.aiRoleName;
-       this.roleInstance = config.aiRoleInstance;
-       this.instrumentationKey = config.aiInstrumentationKey;
-       
-       if (!!config.aiPrefix) {
-           this.prefix = config.aiPrefix + ".";
-       }
-       if (!!config.aiTrackStatsDMetrics) {
-           this.trackStatsDMetrics = config.aiTrackStatsDMetrics;
-       }
-    }
-    
-    protected init(events: events.EventEmitter) {
+    Object.defineProperty(AppInsightsBackend.prototype, "aiClient", {
+        get: function () {
+            return ai.defaultClient;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    AppInsightsBackend.prototype.init = function (events) {
         console.log("[aibackend] Initializing");
-        
         this.appInsights = ai.setup(this.instrumentationKey);
-        
         if (this.roleName) {
             this.aiClient.context.tags[this.aiClient.context.keys.deviceRoleName] = this.roleName;
         }
         if (this.roleInstance) {
-            this.aiClient.context.tags[this.aiClient.context.keys.deviceRoleInstance] = this.roleInstance;    
+            this.aiClient.context.tags[this.aiClient.context.keys.deviceRoleInstance] = this.roleInstance;
         }
-
         console.log("[aibackend] Registering for 'flush' event");
         events.on("flush", this.onFlush.bind(this));
-    }
-    
-    protected onFlush(timestamp: string, metrics: any) {
+    };
+    AppInsightsBackend.prototype.onFlush = function (timestamp, metrics) {
         console.log("[aibackend] OnFlush called");
-        
-        // Process counters
-        let countersTracked = 0;
-        for (const counterKey in metrics.counters) {
+
+        console.log("##debug %s", this.aiClient);
+
+        var countersTracked = 0;
+        for (var counterKey in metrics.counters) {
             if (!this.shouldProcess(counterKey)) {
                 continue;
             }
-            const parsedCounterKey = this.parseKey(counterKey);
-            const counter = metrics.counters[counterKey];
-            
-            this.aiClient.trackMetric(parsedCounterKey.metricname, counter, null, null, null, null, parsedCounterKey.properties);
+            var parsedCounterKey = this.parseKey(counterKey);
+            var counter = metrics.counters[counterKey];
+            var metricName = this.prefix + parsedCounterKey.metricname;
+
+            this.aiClient.trackMetric({name: metricName,value: counter});
             countersTracked++;
-        };
+            console.log("[aibackend] - metric {name: %s, value: %d}", metricName, counter)
+        }
+        ;
         console.log("[aibackend] %d counters tracked", countersTracked);
-        	
-        // Process timer data
-        let timerDataTracked = 0;
-        for (const timerKey in metrics.timer_data) {
+        var timerDataTracked = 0;
+        for (var timerKey in metrics.timer_data) {
             if (!this.shouldProcess(timerKey)) {
                 continue;
             }
-            const parsedTimerKey = this.parseKey(timerKey);
-            const timer = metrics.timer_data[timerKey];
-            
-            this.aiClient.trackMetric(
-                parsedTimerKey.metricname, 
-                timer.sum,
-                timer.count,
-                timer.lower,
-                timer.upper,
-                timer.std,
-                parsedTimerKey.properties);
-            timerDataTracked++;
-        };
-        console.log("[aibackend] %d timer data tracked", timerDataTracked);
+            var parsedTimerKey = this.parseKey(timerKey);
+            var timer = metrics.timer_data[timerKey];
+            var metricName = this.prefix + parsedTimerKey.metricname;
 
-        // Process gauges
-        let gaugesTracked = 0;
-        for (const gaugeKey in metrics.gauges) {
+            this.aiClient.trackMetric({ name: metricName, value: timer.sum, count: timer.count, min: timer.lower, max: timer.upper});
+            timerDataTracked++;
+        }
+        ;
+        console.log("[aibackend] %d timer data tracked", timerDataTracked);
+        var gaugesTracked = 0;
+        for (var gaugeKey in metrics.gauges) {
             if (!this.shouldProcess(gaugeKey)) {
                 continue;
             }
-            const parsedGaugeKey = this.parseKey(gaugeKey);
-            const gauge = metrics.gauges[gaugeKey];
-            
-            this.aiClient.trackMetric(parsedGaugeKey.metricname, gauge, null, null, null, null, parsedGaugeKey.properties);
-            gaugesTracked++;
-        };
-        console.log("[aibackend] %d gauges tracked", gaugesTracked);
-        
-        console.log("[aibackend] OnFlush completed");
+            var parsedGaugeKey = this.parseKey(gaugeKey);
+            var gauge = metrics.gauges[gaugeKey];
+            var metricName = this.prefix + parsedGaugeKey.metricname;
 
+            this.aiClient.trackMetric({ name: metricName,value:  gauge});
+            gaugesTracked++;
+        }
+        ;
+        console.log("[aibackend] %d gauges tracked", gaugesTracked);
+        console.log("[aibackend] OnFlush completed");
         return true;
-    }
-    
-    protected shouldProcess(key: string): boolean  {
+    };
+    AppInsightsBackend.prototype.shouldProcess = function (key) {
         if (!this.trackStatsDMetrics && key.indexOf("statsd.") === 0) {
             return false;
         }
-        
         if (this.prefix !== undefined && this.prefix !== null) {
             return key.indexOf(this.prefix) === 0;
         }
-        
         return true;
-    }
-    
-    protected parseKey(key: string) {
-        // Remove the prefix if it is set
+    };
+    AppInsightsBackend.prototype.parseKey = function (key) {
         if (this.prefix) {
             if (key.indexOf(this.prefix) === 0) {
                 key = key.substr(this.prefix.length);
             }
         }
-
-        // Get metric name
-        const endOfNameIndex = key.indexOf("__");
-        const metricName = endOfNameIndex > 0 ? key.substring(0, endOfNameIndex) : key;
-
-        // Get properties
-        let properties: { [key: string]: string } = undefined;
+        var endOfNameIndex = key.indexOf("__");
+        var metricName = endOfNameIndex > 0 ? key.substring(0, endOfNameIndex) : key;
+        var properties = undefined;
         if (endOfNameIndex > 0) {
-            const propertiesString = key.substring(endOfNameIndex + 2);
-
+            var propertiesString = key.substring(endOfNameIndex + 2);
             try {
-                const buffer = new Buffer(propertiesString, "base64");
+                var buffer = new Buffer(propertiesString, "base64");
                 properties = JSON.parse(buffer.toString("utf8"));
-            } catch (error) {
+            }
+            catch (error) {
                 this.aiClient.trackException(new Error("Failed to parse properties string from key '" + key + "': " + util.inspect(error)));
             }
         }
-
         return {
-            metricname : metricName,
+            metricname: metricName,
             properties: properties,
         };
-    }
-};
-
+    };
+    AppInsightsBackend.init = function (startupTime, config, events) {
+        var instance = new AppInsightsBackend(config);
+        instance.init(events);
+        return true;
+    };
+    return AppInsightsBackend;
+}());
+;
 console.log("[aibackend] Started");
+module.exports = AppInsightsBackend;
 
-export = AppInsightsBackend;
+//# sourceMappingURL=appinsights.js.map
