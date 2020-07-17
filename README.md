@@ -1,7 +1,5 @@
 # Application Insights StatsD backend
 
-[![NPM version](https://badge.fury.io/js/appinsights-statsd.svg)](http://badge.fury.io/js/appinsights-statsd)
-[![Build Status](https://travis-ci.org/Microsoft/ApplicationInsights-statsd.svg?branch=master)](https://travis-ci.org/Microsoft/ApplicationInsights-statsd)
 
 The ApplicationInsights StatsD backend enables easy pre-aggregation of lightweight [StatsD](https://github.com/etsy/statsd) metrics that can be then forwarded to Application Insights.
 
