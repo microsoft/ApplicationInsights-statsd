@@ -1,5 +1,5 @@
 {
-  "name": "appinsights-statsd-dev",
+  "name": "appinsights-statsd-beta",
   "version": "0.0.1",
   "description": "Application Insights StatsD backend",
   "main": "lib/appinsights.js",
@@ -19,7 +19,7 @@
     "appinsights",
     "statsd"
   ],
-  "author": "binroon@hotmail.com",
+  "author": "lukekim@microsoft.com",
   "license": "MIT",
   "files": [
     "LICENSE",
