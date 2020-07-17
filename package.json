@@ -1,6 +1,6 @@
 {
-  "name": "appinsights-statsd",
-  "version": "0.3.1",
+  "name": "appinsights-statsd-osdu",
+  "version": "0.0.1",
   "description": "Application Insights StatsD backend",
   "main": "lib/appinsights.js",
   "scripts": {
