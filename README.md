@@ -1,12 +1,11 @@
+This SDK is NOT currently maintained or supported by Microsoft. Azure Monitor only provides support when using the [supported SDKs](https://docs.microsoft.com/en-us/azure/azure-monitor/app/platforms#unsupported-community-sdks). We’re constantly assessing opportunities to expand our support for other languages, so follow our [GitHub Announcements](https://github.com/microsoft/ApplicationInsights-Announcements/issues) page to receive the latest SDK news.
+
 # Application Insights StatsD backend
 
 [![NPM version](https://badge.fury.io/js/appinsights-statsd.svg)](http://badge.fury.io/js/appinsights-statsd)
 [![Build Status](https://travis-ci.org/Microsoft/ApplicationInsights-statsd.svg?branch=master)](https://travis-ci.org/Microsoft/ApplicationInsights-statsd)
 
 The ApplicationInsights StatsD backend enables easy pre-aggregation of lightweight [StatsD](https://github.com/etsy/statsd) metrics that can be then forwarded to Application Insights.
-
-## Status
-This SDK is NOT maintained or supported by Microsoft even though we've contributed to it in the past. Note that Azure Monitor only provides support when using the [supported SDKs](https://docs.microsoft.com/en-us/azure/azure-monitor/app/platforms#unsupported-community-sdks). We’re constantly assessing opportunities to expand our support for other languages, so follow our [GitHub Announcements](https://github.com/microsoft/ApplicationInsights-Announcements/issues) page to receive the latest SDK news.
 
 ## Installation and Configuration
 
